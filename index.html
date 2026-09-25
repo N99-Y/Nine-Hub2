@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lua to Moonsec (Anti-AI Edition)</title>
+    <title>Lua to Moonsec</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0d0d0d; --container-bg: #121212;
             --text-main: #e0e0e0; --input-bg: #1a1a1a;
-            --input-border: #333; --btn-blue: #cc0000; /* เปลี่ยนสีปุ่มให้ดูดุดันขึ้น */
-            --btn-blue-hover: #ff1a1a; --logo-blue: #ff4d4d;
+            --input-border: #333; --btn-blue: #cc0000;
+            --btn-blue-hover: #ff1a1a; --logo-blue: #5b9bf8;
         }
         body {
             background-color: var(--bg-color); color: var(--text-main);
@@ -18,12 +18,20 @@
             display: flex; justify-content: center; min-height: 100vh;
         }
         .container { width: 100%; max-width: 500px; padding: 30px 20px; box-sizing: border-box; }
+        
+        /* ปรับแต่งโลโก้ให้เป็นลิงก์กดได้ */
         .logo {
+            display: block; /* ทำให้เป็นบล็อกเพื่อให้อยู่ตรงกลาง */
             color: var(--logo-blue); text-align: center; font-size: 32px;
             font-weight: 600; text-decoration: underline; text-underline-offset: 6px;
             margin-top: 20px; margin-bottom: 40px; letter-spacing: 2px;
-            text-transform: uppercase;
+            cursor: pointer; /* เปลี่ยนเมาส์เป็นรูปมือเวลากระทบ */
+            transition: color 0.2s; /* เอฟเฟกต์ตอนชี้ */
         }
+        .logo:hover {
+            color: #8ab6fa; /* สีตอนเอาเมาส์ชี้ */
+        }
+        
         label { display: block; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
         textarea {
             width: 100%; height: 140px; background-color: var(--input-bg);
@@ -37,7 +45,7 @@
             width: 100%; padding: 16px; background-color: var(--btn-blue);
             color: white; border: none; border-radius: 8px; font-size: 16px;
             font-weight: 600; font-family: 'Kanit', sans-serif; cursor: pointer;
-            margin-bottom: 25px; transition: 0.2s; text-transform: uppercase;
+            margin-bottom: 25px; transition: 0.2s;
         }
         .btn:hover { background-color: var(--btn-blue-hover); transform: scale(1.02); }
     </style>
@@ -45,28 +53,30 @@
 <body>
 
     <div class="container">
-        <div class="logo">nine (Anti-AI)</div>
+        <!-- เปลี่ยนจาก div ธรรมดาเป็น a (ลิงก์) -->
+        <a href="https://www.tiktok.com/@niine909" target="_blank" class="logo">nine</a>
 
         <label for="lua-input">วางโค้ด Lua ของคุณที่นี่:</label>
         <textarea id="lua-input" placeholder="-- ใส่โค้ดที่ต้องการซ่อน..."></textarea>
 
-        <button id="convert-btn" class="btn">เข้ารหัสระดับสูงสุด (Anti-AI)</button>
+        <button id="convert-btn" class="btn">เข้ารหัสสูงสุด</button>
 
-        <label for="moonsec-output">ผลลัพธ์ (ห้ามแก้ไขโค้ดแม้แต่ตัวเดียว):</label>
+        <label for="moonsec-output">ผลลัพธ์</label>
         <textarea id="moonsec-output" readonly placeholder="-- โค้ดป้องกันขั้นสูงจะแสดงที่นี่"></textarea>
     </div>
 
     <script>
-        document.getElementById('convert-btn').addEventListener('click', function() {
+        document.getElementById('convert-btn').addEventListener('click', async function() {
             const luaInput = document.getElementById('lua-input').value;
             const outputBox = document.getElementById('moonsec-output');
+            const btn = this;
 
             if (luaInput.trim() === '') {
                 alert('กรุณาวางโค้ด Lua ของคุณก่อนครับ');
                 return;
             }
 
-            // ฟังก์ชันสุ่มชื่อตัวแปรที่ชวนปวดหัวสุดๆ (ใช้ i, l, 1, I สลับกัน)
+            // ฟังก์ชันสุ่มชื่อตัวแปร
             const rV = () => 'l' + Array.from({length: 12 + Math.random()*10}, () => ['I','l','1'][Math.floor(Math.random()*3)]).join('') + 'I';
 
             // ฟังก์ชันเปลี่ยนตัวเลข เป็นสมการคณิตศาสตร์
@@ -89,7 +99,6 @@
 
             const vTable = rV(), vStr = rV(), vDecode = rV(), vJunk1 = rV(), vJunk2 = rV(), vExec = rV();
 
-            // โครงสร้างโค้ดที่มีกับดัก AI (Junk Logic)
             const obfuscatedCode = 
 `-- [ Protected by NINE Anti-AI System ] --
 local function ${vJunk1}(...) if not true then return "AI_TRAP_DETECTED_1" end end
@@ -113,7 +122,29 @@ end
 ${vTable} = nil; ${vStr} = nil; ${vDecode} = nil;
 -- [ EOF ] --`;
 
+            // แสดงผล
             outputBox.value = obfuscatedCode;
+
+            // ระบบคัดลอก (Copy) อัตโนมัติ
+            outputBox.select();
+            outputBox.setSelectionRange(0, 99999); // รองรับมือถือ
+            try {
+                await navigator.clipboard.writeText(obfuscatedCode);
+                
+                const originalText = btn.innerText;
+                btn.innerText = 'คัดลอกสำเร็จ!';
+                btn.style.backgroundColor = '#28a745'; // เปลี่ยนสีปุ่มเป็นสีเขียวชั่วคราว
+                
+                setTimeout(() => { 
+                    btn.innerText = originalText;
+                    btn.style.backgroundColor = ''; 
+                }, 1500);
+            } catch (err) {
+                document.execCommand("copy");
+                const originalText = btn.innerText;
+                btn.innerText = 'คัดลอกสำเร็จ!';
+                setTimeout(() => { btn.innerText = originalText; }, 1500);
+            }
         });
     </script>
 
