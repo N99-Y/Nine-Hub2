@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lua to Moonsec Converter</title>
-    <!-- เรียกใช้ฟอนต์ Kanit เพื่อให้ตัวหนังสือภาษาไทยดูสวยงาม -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -37,7 +36,6 @@
             box-sizing: border-box;
         }
 
-        /* ส่วนโลโก้ */
         .logo {
             color: var(--logo-blue);
             text-align: center;
@@ -50,7 +48,6 @@
             letter-spacing: 1px;
         }
 
-        /* ส่วนข้อความ Label */
         label {
             display: block;
             font-size: 14px;
@@ -58,7 +55,6 @@
             margin-bottom: 10px;
         }
 
-        /* ส่วนกล่องข้อความ Textarea */
         textarea {
             width: 100%;
             height: 140px;
@@ -69,7 +65,7 @@
             color: var(--text-main);
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
-            resize: none; /* ปิดการขยายกล่อง */
+            resize: none;
             box-sizing: border-box;
             margin-bottom: 25px;
             transition: border-color 0.3s;
@@ -84,7 +80,6 @@
             color: #666;
         }
 
-        /* ส่วนปุ่มกด */
         .btn {
             width: 100%;
             padding: 16px;
@@ -104,13 +99,6 @@
             background-color: var(--btn-blue-hover);
         }
 
-        .btn:disabled {
-            background-color: #555;
-            cursor: not-allowed;
-            color: #999;
-        }
-
-        /* ปรับแต่ง Scrollbar สำหรับ Textarea */
         textarea::-webkit-scrollbar {
             width: 8px;
         }
@@ -127,64 +115,50 @@
 <body>
 
     <div class="container">
-        <!-- โลโก้ -->
+        <!-- โลโก้ตามต้นฉบับ -->
         <div class="logo">nine</div>
 
-        <!-- กล่องใส่โค้ด Lua -->
         <label for="lua-input">วางโค้ด Lua ของคุณที่นี่:</label>
         <textarea id="lua-input" placeholder="-- วางสคริปต์ของคุณตรงนี้..."></textarea>
 
-        <!-- ปุ่มแปลงโค้ด (เปลี่ยนข้อความเป็น Moonsec) -->
         <button id="convert-btn" class="btn">แปลงเป็น Moonsec ทันที</button>
 
-        <!-- กล่องแสดงผลลัพธ์ -->
         <label for="moonsec-output">ผลลัพธ์ (คัดลอกไปรันได้เลย):</label>
         <textarea id="moonsec-output" readonly placeholder="-- โค้ด Moonsec จะแสดงที่นี่"></textarea>
     </div>
 
-    <!-- ส่วนของการทำงาน (JavaScript) -->
     <script>
         document.getElementById('convert-btn').addEventListener('click', function() {
             const luaInput = document.getElementById('lua-input').value;
             const outputBox = document.getElementById('moonsec-output');
-            const btn = this;
 
-            // เช็คว่าผู้ใช้ใส่โค้ดหรือยัง
             if (luaInput.trim() === '') {
                 alert('กรุณาวางโค้ด Lua ของคุณก่อนครับ');
                 return;
             }
 
-            // ทำเอฟเฟกต์ปุ่มกำลังโหลด
-            btn.innerText = 'กำลังประมวลผล...';
-            btn.disabled = true;
+            // --- กระบวนการ Obfuscate ด้วย JavaScript (ไม่ใช้ API) ---
+            
+            // 1. แปลงตัวอักษรแต่ละตัวในโค้ดให้อยู่ในรูปของรหัส ASCII (Byte Array)
+            let byteArray = [];
+            for (let i = 0; i < luaInput.length; i++) {
+                byteArray.push(luaInput.charCodeAt(i));
+            }
 
-            // จำลองการดีเลย์เหมือนกำลังส่งข้อมูลไป Server (1.5 วินาที)
-            setTimeout(() => {
-                
-                /* 
-                  หมายเหตุสำคัญ:
-                  การทำ Obfuscate ด้วย Moonsec จริงๆ ไม่สามารถเขียนด้วย JavaScript หน้าเว็บเพียวๆ ได้ 
-                  คุณต้องนำโค้ดส่วนนี้ไปเชื่อมต่อ (Fetch/AJAX) กับ Backend API ของคุณที่รันตัวเข้ารหัส Moonsec อีกทีครับ
-                  
-                  ด้านล่างนี้เป็นเพียงข้อความจำลองผลลัพธ์เท่านั้น
-                */
-               
-                const fakeMoonsecOutput = `-- [Moonsec V3] Obfuscated Script\n-- หมายเหตุ: นี่เป็นเพียง UI จำลอง คุณต้องเชื่อมต่อ API ของ Moonsec ด้านหลังบ้าน (Backend)\n\ngetgenv().moonsec_loaded = true;\nprint("Hello, Moonsec!");`;
-                
-                // นำผลลัพธ์ไปแสดง
-                outputBox.value = fakeMoonsecOutput;
+            // 2. สร้างโครงสร้าง Lua เปลือกนอก (Loader) ให้ดูลึกลับสไตล์ Moonsec
+            // โค้ดนี้จะนำรหัสตัวเลขกลับมาประกอบเป็น String แล้วรันผ่าน loadstring()
+            const obfuscatedCode = 
+`-- [ Moonsec Local Engine ] --
+local _M = { ${byteArray.join(', ')} }
+local _S = ""
+for i = 1, #_M do
+    _S = _S .. string.char(_M[i])
+end
+local _EXE = loadstring or load
+_EXE(_S)()`;
 
-                // คืนค่าปุ่มกลับมาเหมือนเดิม
-                btn.innerText = 'แปลงเป็น Moonsec ทันที';
-                btn.disabled = false;
-                
-                // แจ้งเตือน หรือ ทำการ Copy อัตโนมัติ (ใส่เพิ่มได้)
-                // outputBox.select();
-                // document.execCommand('copy');
-                // alert('คัดลอกโค้ดสำเร็จ!');
-
-            }, 1500);
+            // 3. แสดงผลลัพธ์ทันที
+            outputBox.value = obfuscatedCode;
         });
     </script>
 
