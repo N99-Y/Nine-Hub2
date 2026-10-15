@@ -5,16 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nine Script Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&family=JetBrains-Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body { 
             font-family: 'Prompt', sans-serif; 
             background-color: #030712; 
             color: #fff;
-            font-weight: 600;
         }
-        .code-font { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+        .code-font { font-family: 'JetBrains Mono', monospace; font-weight: 800; }
         .border-cyan { border-color: #2dd4bf; }
         .text-cyan { color: #2dd4bf; }
         
@@ -27,8 +26,8 @@
             top: 0; left: 0; right: 0;
             height: 3px;
             background: #2dd4bf;
-            box-shadow: 0 0 12px #2dd4bf;
-            animation: scanline 1.5s infinite linear;
+            box-shadow: 0 0 15px #2dd4bf;
+            animation: scanline 1.2s infinite linear;
             z-index: 20;
         }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -38,84 +37,84 @@
 <body class="min-h-screen flex items-center justify-center p-3 selection:bg-teal-500 selection:text-white">
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-950 border-2 border-cyan text-cyan text-xs font-bold px-5 py-2.5 rounded-full shadow-[0_0_20px_rgba(45,212,191,0.5)] opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2">
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-950 border-2 border-cyan text-cyan text-sm font-black px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(45,212,191,0.6)] opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2">
         แจ้งเตือน
     </div>
 
     <!-- Main Container -->
-    <div class="w-full max-w-md border-2 border-cyan bg-gray-950/95 backdrop-blur-md flex flex-col relative rounded-lg shadow-[0_0_30px_rgba(45,212,191,0.2)] overflow-hidden my-auto" style="min-height: 85vh;">
+    <div class="w-full max-w-md border-2 border-cyan bg-gray-950/95 backdrop-blur-md flex flex-col relative rounded-lg shadow-[0_0_35px_rgba(45,212,191,0.25)] overflow-hidden my-auto" style="min-height: 85vh;">
         
         <!-- Header -->
-        <div class="text-center py-4 px-2 bg-gray-900/30">
-            <h1 class="text-4xl font-extrabold tracking-widest text-cyan drop-shadow-[0_0_12px_rgba(45,212,191,0.8)]">NINE</h1>
-            <p class="text-sm font-bold text-gray-200 tracking-wide mt-1">วางลิงก์เพื่อดู Lua</p>
-            <p class="text-[10px] font-extrabold text-cyan/70 tracking-widest mt-0.5">[ UNIVERSAL SCRIPT EXTRACTOR ]</p>
+        <div class="text-center py-4 px-2 bg-gray-900/40">
+            <h1 class="text-5xl font-black tracking-widest text-cyan drop-shadow-[0_0_15px_rgba(45,212,191,0.9)]">NINE</h1>
+            <p class="text-sm font-black text-gray-100 tracking-wider mt-1">วางลิงก์เพื่อดู Lua</p>
+            <p class="text-[10px] font-black text-cyan/80 tracking-widest mt-1">[ UNIVERSAL SCRIPT EXTRACTOR ]</p>
         </div>
         
-        <hr class="border-t-2 border-cyan/60 w-full">
+        <hr class="border-t-2 border-cyan/70 w-full">
         
         <!-- Main Content Area -->
         <div class="flex-grow flex flex-col p-4 space-y-4">
             
-            <!-- Split Box (Strict 50/50 Equal Height) -->
-            <div class="w-full border-2 border-cyan bg-black/80 relative flex flex-col rounded-md overflow-hidden h-[420px] shadow-inner">
+            <!-- Strict 50/50 Split Box -->
+            <div class="w-full border-2 border-cyan bg-black/80 relative flex flex-col rounded-md overflow-hidden h-[440px] shadow-inner">
                 
                 <div id="scanner" class="scan-effect hidden"></div>
 
-                <!-- Upper Box: Input (50% Height) -->
-                <div class="h-[calc(50%-18px)] p-2.5 bg-gray-900/60 flex flex-col border-b-2 border-cyan/50 relative">
+                <!-- Upper Box: Input (Exactly 50% minus half of middle bar) -->
+                <div class="h-[calc(50%-20px)] p-3 bg-gray-900/70 flex flex-col border-b-2 border-cyan/60 relative">
                     <div class="text-center mb-1">
-                        <span class="text-xs font-extrabold text-cyan font-mono tracking-wider">// PASTE URL HERE //</span>
+                        <span class="text-xs font-black text-cyan font-mono tracking-widest">// PASTE URL HERE //</span>
                     </div>
-                    <textarea id="urlInput" placeholder="(วางลิงก์ GitHub, Gist หรือ Antiraw ตรงนี้...)" 
-                        class="w-full flex-grow bg-black/70 text-xs font-bold text-teal-200 placeholder-gray-500 focus:outline-none resize-none p-2 border border-cyan/40 focus:border-cyan rounded transition code-font leading-relaxed text-center"
+                    <textarea id="urlInput" placeholder="(วางลิงก์ตรงนี้...)" 
+                        class="w-full flex-grow bg-black/80 text-xs font-black text-teal-200 placeholder-gray-500 focus:outline-none resize-none p-2 border border-cyan/50 focus:border-cyan rounded transition code-font leading-relaxed text-center"
                         onfocus="playSfx('click')"
                         oninput="handleUrlInput()"></textarea>
                 </div>
                 
-                <!-- Middle Status Bar (36px Height) -->
-                <div class="h-[36px] bg-cyan/20 px-3 flex items-center justify-between text-xs font-extrabold font-mono text-cyan border-b-2 border-cyan/50 flex-none">
-                    <span id="statusText" class="tracking-wider">STATUS: WAITING</span>
-                    <span id="statsInfo" class="opacity-90">0 LINES | 0B</span>
+                <!-- Middle Status Bar (Exactly 40px Height, Centered) -->
+                <div class="h-[40px] bg-cyan/20 px-4 flex items-center justify-center text-sm font-black font-mono text-cyan border-b-2 border-cyan/60 flex-none relative">
+                    <span id="statusText" class="tracking-widest drop-shadow-[0_0_5px_rgba(45,212,191,0.8)]">สถานะ: รอรับคำสั่ง</span>
+                    
+                    <!-- Stats moved to absolute right so status stays perfectly centered -->
+                    <span id="statsInfo" class="absolute right-3 text-[9px] font-bold opacity-80 tracking-wider">0 LINES</span>
                 </div>
 
-                <!-- Lower Box: Code Output (50% Height) -->
-                <div class="h-[calc(50%-18px)] p-2.5 bg-black/95 flex flex-col">
+                <!-- Lower Box: Code Output (Exactly 50% minus half of middle bar) -->
+                <div class="h-[calc(50%-20px)] p-3 bg-black/95 flex flex-col">
                     <div class="text-center mb-1">
-                        <span class="text-xs font-extrabold text-cyan/80 font-mono tracking-wider">// EXTRACTED LUA CODE //</span>
+                        <span class="text-xs font-black text-cyan/90 font-mono tracking-widest">// EXTRACTED LUA CODE //</span>
                     </div>
                     <textarea id="codeDisplay" readonly placeholder="// โค้ด Lua ที่แกะสำเร็จแล้วจะแสดงตรงนี้..." 
-                        class="w-full flex-grow bg-transparent text-xs font-bold text-emerald-400 focus:outline-none resize-none code-font whitespace-pre overflow-y-auto leading-relaxed"></textarea>
+                        class="w-full flex-grow bg-transparent text-xs font-black text-emerald-400 focus:outline-none resize-none code-font whitespace-pre overflow-y-auto leading-relaxed"></textarea>
                 </div>
 
             </div>
             
-            <!-- Action Buttons Bar (Thicker & Larger Text) -->
-            <div class="text-base font-extrabold tracking-wider flex items-center justify-around py-2 border-y-2 border-cyan/30 bg-gray-900/40">
-                <button onclick="copyCode()" class="hover:text-cyan text-gray-100 transition cursor-pointer active:scale-95 py-1 px-3">คัดลอก</button>
-                <span class="text-cyan font-bold">|</span>
-                <button onclick="downloadCode()" class="hover:text-cyan text-gray-100 transition cursor-pointer active:scale-95 py-1 px-3">ดาวโหลด</button>
-                <span class="text-cyan font-bold">|</span>
+            <!-- Action Buttons -->
+            <div class="text-lg font-black tracking-widest flex items-center justify-around py-3 border-y-2 border-cyan/40 bg-gray-900/50">
+                <button onclick="copyCode()" class="hover:text-cyan text-gray-50 transition cursor-pointer active:scale-95 py-1 px-3">คัดลอก</button>
+                <span class="text-cyan font-black">|</span>
+                <button onclick="downloadCode()" class="hover:text-cyan text-gray-50 transition cursor-pointer active:scale-95 py-1 px-3">ดาวโหลด</button>
+                <span class="text-cyan font-black">|</span>
                 <button onclick="clearAll()" class="hover:text-rose-400 text-gray-300 transition cursor-pointer active:scale-95 py-1 px-3">ล้าง</button>
             </div>
             
         </div>
         
         <!-- Footer -->
-        <hr class="border-t-2 border-cyan/60 w-full">
-        <div class="text-center py-3 text-xs font-bold tracking-widest text-gray-300 bg-gray-950">
+        <hr class="border-t-2 border-cyan/70 w-full">
+        <div class="text-center py-3 text-xs font-black tracking-widest text-gray-200 bg-gray-950">
             ผู้สร้าง : N99 HUB
         </div>
         
     </div>
 
-    <!-- Audio Synthesizer & Multi-Proxy Fetch Logic -->
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
         function playSfx(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain);
@@ -123,35 +122,21 @@
             const now = audioCtx.currentTime;
 
             if (type === 'click') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-                osc.start(now);
-                osc.stop(now + 0.04);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.06, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                osc.start(now); osc.stop(now + 0.04);
             } else if (type === 'success') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                osc.start(now);
-                osc.stop(now + 0.2);
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
             } else if (type === 'fetch') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(300, now);
-                osc.frequency.linearRampToValueAtTime(600, now + 0.08);
-                gain.gain.setValueAtTime(0.04, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-                osc.start(now);
-                osc.stop(now + 0.08);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.start(now); osc.stop(now + 0.08);
             } else if (type === 'error') {
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(150, now);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc.start(now);
-                osc.stop(now + 0.15);
+                osc.type = 'square'; osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
             }
         }
 
@@ -168,63 +153,52 @@
 
         let currentCode = "";
 
-        // สกัด URL บริสุทธิ์
         function extractCleanUrl(rawInput) {
             if (!rawInput) return "";
-            
             const match = rawInput.match(/https?:\/\/[^\s"'`\)\>]+/i);
             if (!match) return rawInput.trim();
-
-            let url = match[0];
-            url = url.replace(/["')\s]+$/, '');
-            url = url.replace(/%2520/g, '%20');
-
+            let url = match[0].replace(/["')\s]+$/, '').replace(/%2520/g, '%20');
             if (url.includes('github.com') && url.includes('/blob/')) {
                 url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
-
             return url;
         }
 
         async function fetchScriptSmart(targetUrl) {
-            const isAntiraw = targetUrl.includes('antiraw') || targetUrl.includes('luauforge');
+            const statusEl = document.getElementById('statusText');
             
-            // รายการ Proxy สำรองหลายสาย
+            // ใส่พารามิเตอร์หลอกว่าเป็น Roblox ดึงข้อมูล เผื่อตบตา Antiraw ได้
+            const trickUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'executor=roblox&ua=robloxApp';
+            const encodedTrick = encodeURIComponent(trickUrl);
+            const encodedTarget = encodeURIComponent(targetUrl);
+
+            // สายเจาะระบบ 4 เส้นทาง สู้จนกว่าจะดึงได้
             const proxies = [
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-                `https://secret.natwarach99.workers.dev/?url=${encodeURIComponent(targetUrl)}`
+                `https://api.codetabs.com/v1/proxy?quest=${encodedTrick}`,
+                `https://api.allorigins.win/raw?url=${encodedTrick}`,
+                `https://secret.natwarach99.workers.dev/?url=${encodedTarget}`, // Cloudflare Worker ตัวเด็ด
+                targetUrl // ทะลวงตรงๆ
             ];
 
-            // 1. ถ้าไม่ใช่ Antiraw ลอง Direct Fetch ก่อน
-            if (!isAntiraw) {
-                try {
-                    const res = await fetch(targetUrl);
-                    if (res.ok) {
-                        const txt = await res.text();
-                        if (txt && !txt.includes('Script is Protected') && !txt.includes('missing ?url=')) {
-                            return txt;
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // 2. สลับยิงผ่าน Proxy
             for (let i = 0; i < proxies.length; i++) {
+                statusEl.innerText = `สถานะ: กำลังทะลวง (${i+1}/${proxies.length})...`;
+                statusEl.className = "text-amber-400 font-black animate-pulse tracking-widest";
+                
                 try {
-                    const res = await fetch(proxies[i]);
+                    const res = await fetch(proxies[i], { cache: 'no-store' });
                     if (res.ok) {
                         const txt = await res.text();
-                        if (txt && !txt.includes('Script is Protected') && !txt.includes('missing ?url=')) {
+                        // ถ้าแกะแล้วไม่เจอคำพวกนี้ แปลว่าทะลวงสำเร็จ!
+                        if (txt && !txt.includes('Script is Protected') && !txt.includes('not allowed to view') && !txt.includes('missing ?url=')) {
                             return txt;
                         }
                     }
                 } catch(e) {
-                    continue;
+                    continue; // ไม่ยอมแพ้ วนไปเส้นทางต่อไป
                 }
             }
 
-            throw new Error("ระบบ Antiraw บล็อกการดึงผ่านเว็บ (ต้องใช้ Worker ส่วนตัวหรือรันในเกม)");
+            throw new Error("Antiraw ล็อกแน่นมาก! (ต้องเอา Worker โค้ดเก่าไปใส่ Cloudflare จริงๆ ถึงจะชนะ 100%)");
         }
 
         async function handleUrlInput() {
@@ -236,29 +210,29 @@
                 const targetUrl = extractCleanUrl(rawInput);
 
                 document.getElementById('scanner').classList.remove('hidden');
-                document.getElementById('statusText').innerText = "STATUS: EXTRACTING...";
-                document.getElementById('statusText').className = "text-amber-400 animate-pulse font-extrabold";
-
+                
                 try {
                     currentCode = await fetchScriptSmart(targetUrl);
                     document.getElementById('codeDisplay').value = currentCode;
 
                     const lines = currentCode.split('\n').length;
-                    const bytes = new Blob([currentCode]).size;
-                    document.getElementById('statsInfo').innerText = `${lines} LINES | ${bytes}B`;
+                    document.getElementById('statsInfo').innerText = `${lines} LINES`;
 
-                    document.getElementById('statusText').innerText = "STATUS: SUCCESS";
-                    document.getElementById('statusText').className = "text-emerald-400 font-extrabold";
+                    const statusEl = document.getElementById('statusText');
+                    statusEl.innerText = "สถานะ: สำเร็จ!";
+                    statusEl.className = "text-emerald-400 font-black tracking-widest drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]";
                     
                     playSfx('success');
-                    showToast("⚡ แกะสคริปต์สำเร็จแล้ว!");
+                    showToast("⚡ ทะลวงสคริปต์สำเร็จ!");
 
                 } catch (err) {
                     playSfx('error');
-                    document.getElementById('statusText').innerText = "STATUS: FAILED";
-                    document.getElementById('statusText').className = "text-rose-400 font-extrabold";
+                    const statusEl = document.getElementById('statusText');
+                    statusEl.innerText = "สถานะ: ล้มเหลว";
+                    statusEl.className = "text-rose-500 font-black tracking-widest drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]";
+                    
                     document.getElementById('codeDisplay').value = "-- เกิดข้อผิดพลาด: " + err.message;
-                    showToast("❌ แกะสคริปต์ไม่สำเร็จ!");
+                    showToast("❌ ทะลวงไม่สำเร็จ!");
                 } finally {
                     document.getElementById('scanner').classList.add('hidden');
                 }
@@ -283,7 +257,6 @@
                 playSfx('error');
                 return showToast("⚠️ วางลิงก์ก่อนดิวะ!");
             }
-
             const blob = new Blob([currentCode], { type: "text/plain;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -302,9 +275,10 @@
             document.getElementById('urlInput').value = "";
             document.getElementById('codeDisplay').value = "";
             currentCode = "";
-            document.getElementById('statusText').innerText = "STATUS: WAITING";
-            document.getElementById('statusText').className = "text-cyan font-extrabold";
-            document.getElementById('statsInfo').innerText = "0 LINES | 0B";
+            const statusEl = document.getElementById('statusText');
+            statusEl.innerText = "สถานะ: รอรับคำสั่ง";
+            statusEl.className = "text-cyan font-black tracking-widest drop-shadow-[0_0_5px_rgba(45,212,191,0.8)]";
+            document.getElementById('statsInfo').innerText = "0 LINES";
             showToast("🧹 ล้างข้อมูลแล้ว");
         }
     </script>
