@@ -1,152 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lua to Moonsec</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #0d0d0d; --container-bg: #121212;
-            --text-main: #e0e0e0; --input-bg: #1a1a1a;
-            --input-border: #333; --btn-blue: #cc0000;
-            --btn-blue-hover: #ff1a1a; --logo-blue: #5b9bf8;
-        }
-        body {
-            background-color: var(--bg-color); color: var(--text-main);
-            font-family: 'Kanit', sans-serif; margin: 0; padding: 0;
-            display: flex; justify-content: center; min-height: 100vh;
-        }
-        .container { width: 100%; max-width: 500px; padding: 30px 20px; box-sizing: border-box; }
-        
-        /* ปรับแต่งโลโก้ให้เป็นลิงก์กดได้ */
-        .logo {
-            display: block; /* ทำให้เป็นบล็อกเพื่อให้อยู่ตรงกลาง */
-            color: var(--logo-blue); text-align: center; font-size: 32px;
-            font-weight: 600; text-decoration: underline; text-underline-offset: 6px;
-            margin-top: 20px; margin-bottom: 40px; letter-spacing: 2px;
-            cursor: pointer; /* เปลี่ยนเมาส์เป็นรูปมือเวลากระทบ */
-            transition: color 0.2s; /* เอฟเฟกต์ตอนชี้ */
-        }
-        .logo:hover {
-            color: #8ab6fa; /* สีตอนเอาเมาส์ชี้ */
-        }
-        
-        label { display: block; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
-        textarea {
-            width: 100%; height: 140px; background-color: var(--input-bg);
-            border: 1px solid var(--input-border); border-radius: 8px; padding: 15px;
-            color: #00ff00; font-family: 'Courier New', monospace;
-            font-size: 13px; resize: none; box-sizing: border-box;
-            margin-bottom: 25px; transition: 0.3s;
-        }
-        textarea:focus { outline: none; border-color: var(--btn-blue); box-shadow: 0 0 10px rgba(204, 0, 0, 0.5); }
-        .btn {
-            width: 100%; padding: 16px; background-color: var(--btn-blue);
-            color: white; border: none; border-radius: 8px; font-size: 16px;
-            font-weight: 600; font-family: 'Kanit', sans-serif; cursor: pointer;
-            margin-bottom: 25px; transition: 0.2s;
-        }
-        .btn:hover { background-color: var(--btn-blue-hover); transform: scale(1.02); }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Script Viewer</title>
+<style>
+  body { background:#0d0d10; color:#e6e6e6; font-family:ui-monospace,Menlo,Consolas,monospace; margin:0; padding:16px; }
+  h1 { font-size:18px; margin:0 0 12px; color:#ff5470; }
+  input,button { font:inherit; padding:10px; border-radius:8px; border:1px solid #333; }
+  input { background:#1a1a1f; color:#e6e6e6; width:100%; box-sizing:border-box; }
+  button { background:#ff5470; color:#fff; border:0; cursor:pointer; margin-top:8px; width:100%; }
+  pre { background:#141418; border:1px solid #222; border-radius:8px; padding:12px; margin-top:14px;
+        white-space:pre-wrap; word-break:break-all; max-height:70vh; overflow:auto; font-size:12px; line-height:1.5; }
+  .status { font-size:12px; color:#888; margin-top:6px; min-height:16px; }
+</style>
 </head>
 <body>
+  <h1>Script Viewer</h1>
+  <input id="url" placeholder="วาง URL script ที่นี่..." />
+  <button id="go">ดึงโค้ด</button>
+  <div class="status" id="status"></div>
+  <pre id="out"></pre>
 
-    <div class="container">
-        <!-- เปลี่ยนจาก div ธรรมดาเป็น a (ลิงก์) -->
-        <a href="https://www.tiktok.com/@niine909" target="_blank" class="logo">nine</a>
+<script>
+const WORKER = 'https://script-fetcher.<ชื่อมึง>.workers.dev'; // ← ใส่ URL worker ที่ deploy
 
-        <label for="lua-input">วางโค้ด Lua ของคุณที่นี่:</label>
-        <textarea id="lua-input" placeholder="-- ใส่โค้ดที่ต้องการซ่อน..."></textarea>
+const $url    = document.getElementById('url');
+const $go     = document.getElementById('go');
+const $status = document.getElementById('status');
+const $out    = document.getElementById('out');
 
-        <button id="convert-btn" class="btn">เข้ารหัสสูงสุด</button>
-
-        <label for="moonsec-output">ผลลัพธ์</label>
-        <textarea id="moonsec-output" readonly placeholder="-- โค้ดป้องกันขั้นสูงจะแสดงที่นี่"></textarea>
-    </div>
-
-    <script>
-        document.getElementById('convert-btn').addEventListener('click', async function() {
-            const luaInput = document.getElementById('lua-input').value;
-            const outputBox = document.getElementById('moonsec-output');
-            const btn = this;
-
-            if (luaInput.trim() === '') {
-                alert('กรุณาวางโค้ด Lua ของคุณก่อนครับ');
-                return;
-            }
-
-            // ฟังก์ชันสุ่มชื่อตัวแปร
-            const rV = () => 'l' + Array.from({length: 12 + Math.random()*10}, () => ['I','l','1'][Math.floor(Math.random()*3)]).join('') + 'I';
-
-            // ฟังก์ชันเปลี่ยนตัวเลข เป็นสมการคณิตศาสตร์
-            const mathObfuscate = (num) => {
-                const type = Math.floor(Math.random() * 3);
-                const r1 = Math.floor(Math.random() * 50) + 1;
-                const r2 = Math.floor(Math.random() * 50) + 1;
-                if (type === 0) return `((${num - r1} + ${r1}))`;
-                if (type === 1) return `((${num * r2} / ${r2}))`;
-                return `((${num + r1} - ${r1}))`;
-            };
-
-            const shiftKey = Math.floor(Math.random() * 50) + 10;
-            
-            let mathArray = [];
-            for (let i = 0; i < luaInput.length; i++) {
-                let charCode = luaInput.charCodeAt(i) + shiftKey;
-                mathArray.push(mathObfuscate(charCode));
-            }
-
-            const vTable = rV(), vStr = rV(), vDecode = rV(), vJunk1 = rV(), vJunk2 = rV(), vExec = rV();
-
-            const obfuscatedCode = 
-`-- [ Protected by NINE Anti-AI System ] --
-local function ${vJunk1}(...) if not true then return "AI_TRAP_DETECTED_1" end end
-local ${vTable} = {
-    ${mathArray.join(',\n    ')}
-}
-local ${vJunk2} = function() local x = 1 for i=1, 1000 do x = x + i end return x end
-local ${vStr} = ""
-local function ${vDecode}(t)
-    for i = 1, #t do
-        local c = t[i] - ${mathObfuscate(shiftKey)}
-        ${vStr} = ${vStr} .. string.char(c)
-    end
-end
-${vJunk1}("Bypass AI")
-${vDecode}(${vTable})
-local ${vExec} = loadstring or load
-if ${vJunk2}() > 0 then
-    pcall(function() ${vExec}(${vStr})() end)
-end
-${vTable} = nil; ${vStr} = nil; ${vDecode} = nil;
--- [ EOF ] --`;
-
-            // แสดงผล
-            outputBox.value = obfuscatedCode;
-
-            // ระบบคัดลอก (Copy) อัตโนมัติ
-            outputBox.select();
-            outputBox.setSelectionRange(0, 99999); // รองรับมือถือ
-            try {
-                await navigator.clipboard.writeText(obfuscatedCode);
-                
-                const originalText = btn.innerText;
-                btn.innerText = 'คัดลอกสำเร็จ!';
-                btn.style.backgroundColor = '#28a745'; // เปลี่ยนสีปุ่มเป็นสีเขียวชั่วคราว
-                
-                setTimeout(() => { 
-                    btn.innerText = originalText;
-                    btn.style.backgroundColor = ''; 
-                }, 1500);
-            } catch (err) {
-                document.execCommand("copy");
-                const originalText = btn.innerText;
-                btn.innerText = 'คัดลอกสำเร็จ!';
-                setTimeout(() => { btn.innerText = originalText; }, 1500);
-            }
-        });
-    </script>
-
+$go.onclick = async () => {
+  const target = $url.value.trim();
+  if (!target) return;
+  $status.textContent = 'กำลังดึง...';
+  $out.textContent = '';
+  try {
+    const res = await fetch(`${WORKER}/?url=${encodeURIComponent(target)}`);
+    const txt = await res.text();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${txt}`);
+    $out.textContent = txt;
+    $status.textContent = `✅ ได้ ${txt.length.toLocaleString()} ตัวอักษร`;
+  } catch (e) {
+    $status.textContent = '❌ ' + e.message;
+  }
+};
+</script>
 </body>
 </html>
