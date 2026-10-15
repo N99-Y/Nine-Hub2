@@ -4,128 +4,258 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nine Script Hub</title>
-    <!-- โหลด Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Prompt', sans-serif; 
-            background-color: #000; /* พื้นหลังดำสนิท */
+            background-color: #030712; 
             color: #fff;
         }
-        /* เส้นขอบสีฟ้าไซแอนตามแบบ */
-        .border-cyan { border-color: #5eead4; }
-        .text-cyan { color: #5eead4; }
-        
-        /* แต่ง Scrollbar ให้ดูเนียนตา */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #5eead4; border-radius: 10px; }
+        .code-font { font-family: 'JetBrains Mono', monospace; }
+        .border-cyan { border-color: #2dd4bf; }
+        .text-cyan { color: #2dd4bf; }
+        .bg-cyan-glow {
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.2);
+        }
+        /* เอฟเฟกต์ไฟวิ่งตอนกำลังดึงข้อมูล */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(1000%); }
+        }
+        .scan-effect {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: #2dd4bf;
+            box-shadow: 0 0 10px #2dd4bf;
+            animation: scanline 1.5s infinite linear;
+        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #2dd4bf; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 selection:bg-teal-500 selection:text-white">
-    
-    <!-- กรอบหลักแบบมือถือ -->
-    <div class="w-full max-w-sm border border-cyan flex flex-col relative" style="min-height: 85vh;">
+<body class="min-h-screen flex items-center justify-center p-3 selection:bg-teal-500 selection:text-white">
+
+    <!-- Toast แจ้งเตือนสไตล์ Cyberpunk -->
+    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-950 border border-cyan text-cyan text-xs px-4 py-2 rounded-full shadow-[0_0_15px_rgba(45,212,191,0.4)] opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2">
+        แจ้งเตือน
+    </div>
+
+    <!-- กรอบหลัก -->
+    <div class="w-full max-w-sm border border-cyan bg-gray-950/80 backdrop-blur-md flex flex-col relative rounded-none shadow-[0_0_20px_rgba(45,212,191,0.15)]" style="min-height: 90vh;">
         
-        <!-- ส่วนหัว -->
-        <div class="text-center py-5 text-4xl font-light tracking-wider">
-            Nine
+        <!-- Header -->
+        <div class="text-center py-4 text-3xl font-light tracking-widest text-cyan drop-shadow-[0_0_8px_rgba(45,212,191,0.6)]">
+            NINE
         </div>
         
-        <hr class="border-t border-cyan w-full">
+        <hr class="border-t border-cyan w-full opacity-60">
         
-        <!-- ส่วนเนื้อหาหลัก -->
-        <div class="flex-grow flex flex-col items-center py-8 px-6 space-y-6">
+        <!-- Main Content -->
+        <div class="flex-grow flex flex-col items-center py-5 px-4 space-y-4">
             
-            <h2 class="text-2xl font-light tracking-wide">วางลิงก์เพื่อดูLua</h2>
-            
-            <!-- กล่องสี่เหลี่ยมสำหรับใส่ลิงก์ & โชว์โค้ด -->
-            <div class="w-full aspect-square border border-cyan p-2 relative flex flex-col">
-                <textarea id="ioBox" placeholder="(ใส่ลิงก์)" 
-                    class="w-full h-full bg-transparent text-center text-lg text-white placeholder-gray-400 focus:outline-none resize-none"
-                    oninput="handleInput()"></textarea>
+            <div class="text-center">
+                <h2 class="text-lg font-light tracking-wide text-gray-200">วางลิงก์เพื่อดู Lua</h2>
+                <p class="text-[10px] text-cyan/70 tracking-widest mt-0.5">[ SCRIPT EXTRACTOR SYSTEM ]</p>
             </div>
             
-            <!-- ปุ่ม Action ถอดแบบจากรูปเป๊ะๆ -->
-            <div class="text-xl font-light tracking-wider flex items-center space-x-2 pt-2">
+            <!-- กรอบใหญ่ แบ่งออกเป็น 2 ช่อง (Upper: Input / Lower: Output) -->
+            <div class="w-full border border-cyan bg-black/60 relative flex flex-col overflow-hidden rounded-sm" style="height: 320px;">
+                
+                <div id="scanner" class="scan-effect hidden"></div>
+
+                <!-- ช่องบน: ส่วนวางลิงก์ -->
+                <div class="p-2.5 bg-gray-900/40 flex-none border-b border-cyan/40">
+                    <label class="text-[10px] text-cyan block mb-1 font-mono">// PASTE URL HERE:</label>
+                    <textarea id="urlInput" placeholder="(แปะลิงก์ GitHub / Gist ตรงนี้...)" 
+                        class="w-full h-14 bg-black/50 text-xs text-teal-200 placeholder-gray-600 focus:outline-none resize-none p-1.5 border border-cyan/20 focus:border-cyan transition code-font"
+                        onfocus="playSfx('click')"
+                        oninput="handleUrlInput()"></textarea>
+                </div>
+                
+                <!-- แถบเครื่องมือคั่นกลาง (Status Bar) -->
+                <div class="bg-cyan/10 px-3 py-1 flex items-center justify-between text-[10px] font-mono text-cyan border-b border-cyan/30">
+                    <span id="statusText">STATUS: WAITING</span>
+                    <span id="statsInfo">0 LINES | 0B</span>
+                </div>
+
+                <!-- ช่องล่าง: ส่วนโชว์โค้ดที่แกะแล้ว -->
+                <div class="p-2 flex-grow bg-black/90 relative overflow-hidden flex flex-col">
+                    <textarea id="codeDisplay" readonly placeholder="// โค้ด Lua ที่แกะแล้วจะโชว์ตรงนี้..." 
+                        class="w-full h-full bg-transparent text-[11px] text-emerald-400 focus:outline-none resize-none code-font whitespace-pre overflow-y-auto leading-relaxed"></textarea>
+                </div>
+
+            </div>
+            
+            <!-- ปุ่ม Action -->
+            <div class="text-sm font-light tracking-wider flex items-center justify-center space-x-3 pt-2">
                 <span class="text-cyan">|</span>
-                <button onclick="copyCode()" class="hover:text-cyan transition cursor-pointer">คัดลอก</button>
+                <button onclick="copyCode()" class="hover:text-cyan transition cursor-pointer active:scale-95 py-1">คัดลอก</button>
                 <span class="text-cyan">|</span>
-                <button onclick="downloadCode()" class="hover:text-cyan transition cursor-pointer">ดาวโหลด</button>
+                <button onclick="downloadCode()" class="hover:text-cyan transition cursor-pointer active:scale-95 py-1">ดาวโหลด</button>
+                <span class="text-cyan">|</span>
+                <button onclick="clearAll()" class="hover:text-red-400 text-gray-400 transition cursor-pointer active:scale-95 py-1">ล้าง</button>
                 <span class="text-cyan">|</span>
             </div>
             
         </div>
         
-        <!-- ส่วนท้าย -->
-        <hr class="border-t border-cyan w-full">
-        <div class="text-center py-4 text-base font-light tracking-widest">
-            ผู้สร้าง
+        <!-- Footer -->
+        <hr class="border-t border-cyan w-full opacity-60">
+        <div class="text-center py-3 text-xs font-light tracking-widest text-gray-400">
+            ผู้สร้าง : N99 HUB
         </div>
         
     </div>
 
-    <!-- สคริปต์การทำงานหลังบ้าน -->
+    <!-- JavaScript Sound Synthesizer & Logic -->
     <script>
+        // ระบบเสียงสังเคราะห์ด้วย Web Audio API (ไม่ต้องพึ่งไฟล์ภายนอก)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSfx(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                osc.start(now);
+                osc.stop(now + 0.04);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'fetch') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.03, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'error') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2000);
+        }
+
         let currentCode = "";
 
-        async function handleInput() {
-            const box = document.getElementById('ioBox');
-            let url = box.value.trim();
-            
-            // เช็คว่าถ้าพิมพ์ http เข้ามา ให้เริ่มดึงข้อมูล
-            if(url.startsWith('http')) {
-                // แปลงลิงก์ GitHub ธรรมดาให้เป็น Raw อัตโนมัติ
+        async function handleUrlInput() {
+            const urlBox = document.getElementById('urlInput');
+            let url = urlBox.value.trim();
+
+            if (url.startsWith('http')) {
+                playSfx('fetch');
+                
+                // แปลงลิงก์ GitHub Blob เป็น Raw อัตโนมัติ
                 if (url.includes('github.com') && url.includes('/blob/')) {
                     url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
                 }
-                
-                box.value = "กำลังดึงข้อมูล...";
-                
+
+                document.getElementById('scanner').classList.remove('hidden');
+                document.getElementById('statusText').innerText = "STATUS: FETCHING...";
+                document.getElementById('statusText').className = "text-amber-400 animate-pulse";
+
                 try {
-                    // ใช้ฟังก์ชันดึงตรง ไม่พึ่ง Proxy
                     const res = await fetch(url);
-                    if(!res.ok) throw new Error("HTTP " + res.status);
-                    
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+
                     currentCode = await res.text();
+                    document.getElementById('codeDisplay').value = currentCode;
+
+                    // คำนวณ Stats
+                    const lines = currentCode.split('\n').length;
+                    const bytes = new Blob([currentCode]).size;
+                    document.getElementById('statsInfo').innerText = `${lines} LINES | ${bytes}B`;
+
+                    document.getElementById('statusText').innerText = "STATUS: SUCCESS";
+                    document.getElementById('statusText').className = "text-emerald-400";
                     
-                    // เปลี่ยนกล่องให้กลายเป็นที่อ่านโค้ด
-                    box.value = currentCode; 
-                    box.classList.remove('text-center', 'text-lg', 'placeholder-gray-400');
-                    box.classList.add('text-left', 'text-xs', 'font-mono', 'text-teal-100');
-                } catch(err) {
-                    box.value = "ดึงไม่สำเร็จ: " + err.message + "\n(เช็กลิงก์ให้ชัวร์นะว่าเข้าถึงได้)";
-                    setTimeout(() => { box.value = url; }, 3000);
+                    playSfx('success');
+                    showToast("⚡ ดึงสคริปต์สำเร็จแล้ว!");
+
+                } catch (err) {
+                    playSfx('error');
+                    document.getElementById('statusText').innerText = "STATUS: ERROR";
+                    document.getElementById('statusText').className = "text-rose-400";
+                    document.getElementById('codeDisplay').value = "-- เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message;
+                    showToast("❌ ดึงข้อมูลไม่สำเร็จ!");
+                } finally {
+                    document.getElementById('scanner').classList.add('hidden');
                 }
             }
         }
 
         function copyCode() {
-            if(!currentCode) return alert("วางลิงก์ก่อนดิวะ!");
+            playSfx('click');
+            if (!currentCode) {
+                playSfx('error');
+                return showToast("⚠️ วางลิงก์ก่อนดิวะ!");
+            }
             navigator.clipboard.writeText(currentCode).then(() => {
-                alert("คัดลอกโค้ดเรียบร้อย!");
+                playSfx('success');
+                showToast("📋 คัดลอกโค้ดเรียบร้อย!");
             });
         }
 
-        // ฟังก์ชันโหลดเก็บเป็นไฟล์ .txt
         function downloadCode() {
-            if(!currentCode) return alert("วางลิงก์ก่อนดิวะ!");
-            
-            // สร้างไฟล์จำลองขึ้นมาในเบราว์เซอร์
+            playSfx('click');
+            if (!currentCode) {
+                playSfx('error');
+                return showToast("⚠️ วางลิงก์ก่อนดิวะ!");
+            }
+
             const blob = new Blob([currentCode], { type: "text/plain;charset=utf-8" });
             const link = document.createElement("a");
-            
-            // ผูกลิงก์กับตัวไฟล์จำลอง
             link.href = URL.createObjectURL(blob);
-            link.download = "Nine_Script.txt"; // กำหนดชื่อไฟล์และนามสกุล .txt
-            
-            // สั่งกดโหลดอัตโนมัติ
+            link.download = "Nine_Script.txt";
             document.body.appendChild(link);
             link.click();
-            
-            // ลบขยะทิ้งหลังโหลดเสร็จ
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
+
+            playSfx('success');
+            showToast("💾 ดาวน์โหลดไฟล์ .txt สำเร็จ!");
+        }
+
+        function clearAll() {
+            playSfx('click');
+            document.getElementById('urlInput').value = "";
+            document.getElementById('codeDisplay').value = "";
+            currentCode = "";
+            document.getElementById('statusText').innerText = "STATUS: WAITING";
+            document.getElementById('statusText').className = "text-cyan";
+            document.getElementById('statsInfo').innerText = "0 LINES | 0B";
+            showToast("🧹 ล้างข้อมูลแล้ว");
         }
     </script>
 </body>
