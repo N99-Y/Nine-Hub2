@@ -2,284 +2,114 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nine Script Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine Hub - Universal Extractor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #030712; 
-            color: #fff;
-        }
-        .code-font { font-family: 'JetBrains Mono', monospace; font-weight: 800; }
-        .border-cyan { border-color: #2dd4bf; }
-        .text-cyan { color: #2dd4bf; }
-        
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(1000%); }
-        }
-        .scan-effect {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: #2dd4bf;
-            box-shadow: 0 0 15px #2dd4bf;
-            animation: scanline 1.2s infinite linear;
-            z-index: 20;
-        }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #2dd4bf; border-radius: 10px; }
-    </style>
+    <style>body{font-family:sans-serif;background:#030712;color:#fff}</style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-3 selection:bg-teal-500 selection:text-white">
-
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-gray-950 border-2 border-cyan text-cyan text-sm font-black px-6 py-2.5 rounded-full shadow-[0_0_20px_rgba(45,212,191,0.6)] opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2">
-        แจ้งเตือน
-    </div>
-
-    <!-- Main Container -->
-    <div class="w-full max-w-md border-2 border-cyan bg-gray-950/95 backdrop-blur-md flex flex-col relative rounded-lg shadow-[0_0_35px_rgba(45,212,191,0.25)] overflow-hidden my-auto" style="min-height: 85vh;">
+<body class="min-h-screen flex items-center justify-center p-3">
+    <div class="w-full max-w-md border-2 border-teal-400 bg-gray-950 p-4 rounded-lg flex flex-col" style="height:88vh">
         
-        <!-- Header -->
-        <div class="text-center py-4 px-2 bg-gray-900/40">
-            <h1 class="text-5xl font-black tracking-widest text-cyan drop-shadow-[0_0_15px_rgba(45,212,191,0.9)]">NINE</h1>
-            <p class="text-sm font-black text-gray-100 tracking-wider mt-1">วางลิงก์เพื่อดู Lua</p>
-            <p class="text-[10px] font-black text-cyan/80 tracking-widest mt-1">[ UNIVERSAL SCRIPT EXTRACTOR ]</p>
-        </div>
+        <h1 class="text-3xl font-black text-center text-teal-400 mb-1">NINE</h1>
+        <p class="text-center text-xs font-bold text-gray-300 mb-2">วางลิงก์เพื่อดู Lua<br>[ UNIVERSAL SCRIPT EXTRACTOR ]</p>
         
-        <hr class="border-t-2 border-cyan/70 w-full">
-        
-        <!-- Main Content Area -->
-        <div class="flex-grow flex flex-col p-4 space-y-4">
-            
-            <!-- Strict 50/50 Split Box -->
-            <div class="w-full border-2 border-cyan bg-black/80 relative flex flex-col rounded-md overflow-hidden h-[440px] shadow-inner">
-                
-                <div id="scanner" class="scan-effect hidden"></div>
-
-                <!-- Upper Box: Input (Exactly 50% minus half of middle bar) -->
-                <div class="h-[calc(50%-20px)] p-3 bg-gray-900/70 flex flex-col border-b-2 border-cyan/60 relative">
-                    <div class="text-center mb-1">
-                        <span class="text-xs font-black text-cyan font-mono tracking-widest">// PASTE URL HERE //</span>
-                    </div>
-                    <textarea id="urlInput" placeholder="(วางลิงก์ตรงนี้...)" 
-                        class="w-full flex-grow bg-black/80 text-xs font-black text-teal-200 placeholder-gray-500 focus:outline-none resize-none p-2 border border-cyan/50 focus:border-cyan rounded transition code-font leading-relaxed text-center"
-                        onfocus="playSfx('click')"
-                        oninput="handleUrlInput()"></textarea>
-                </div>
-                
-                <!-- Middle Status Bar (Exactly 40px Height, Centered) -->
-                <div class="h-[40px] bg-cyan/20 px-4 flex items-center justify-center text-sm font-black font-mono text-cyan border-b-2 border-cyan/60 flex-none relative">
-                    <span id="statusText" class="tracking-widest drop-shadow-[0_0_5px_rgba(45,212,191,0.8)]">สถานะ: รอรับคำสั่ง</span>
-                    
-                    <!-- Stats moved to absolute right so status stays perfectly centered -->
-                    <span id="statsInfo" class="absolute right-3 text-[9px] font-bold opacity-80 tracking-wider">0 LINES</span>
-                </div>
-
-                <!-- Lower Box: Code Output (Exactly 50% minus half of middle bar) -->
-                <div class="h-[calc(50%-20px)] p-3 bg-black/95 flex flex-col">
-                    <div class="text-center mb-1">
-                        <span class="text-xs font-black text-cyan/90 font-mono tracking-widest">// EXTRACTED LUA CODE //</span>
-                    </div>
-                    <textarea id="codeDisplay" readonly placeholder="// โค้ด Lua ที่แกะสำเร็จแล้วจะแสดงตรงนี้..." 
-                        class="w-full flex-grow bg-transparent text-xs font-black text-emerald-400 focus:outline-none resize-none code-font whitespace-pre overflow-y-auto leading-relaxed"></textarea>
-                </div>
-
+        <div class="flex-grow border-2 border-teal-400 flex flex-col rounded my-2 overflow-hidden">
+            <!-- ช่องใส่ URL / Loadstring -->
+            <div class="h-1/2 p-2 bg-gray-900 border-b border-teal-400 flex flex-col">
+                <p class="text-center text-teal-400 text-[10px] font-bold mb-2">// PASTE URL HERE //</p>
+                <textarea id="inputUrl" placeholder="วางลิงก์ loadstring() ที่นี่..." class="w-full flex-grow bg-black text-xs font-bold text-teal-200 p-2 resize-none outline-none text-center font-mono" oninput="fetchScript()"></textarea>
             </div>
             
-            <!-- Action Buttons -->
-            <div class="text-lg font-black tracking-widest flex items-center justify-around py-3 border-y-2 border-cyan/40 bg-gray-900/50">
-                <button onclick="copyCode()" class="hover:text-cyan text-gray-50 transition cursor-pointer active:scale-95 py-1 px-3">คัดลอก</button>
-                <span class="text-cyan font-black">|</span>
-                <button onclick="downloadCode()" class="hover:text-cyan text-gray-50 transition cursor-pointer active:scale-95 py-1 px-3">ดาวโหลด</button>
-                <span class="text-cyan font-black">|</span>
-                <button onclick="clearAll()" class="hover:text-rose-400 text-gray-300 transition cursor-pointer active:scale-95 py-1 px-3">ล้าง</button>
+            <!-- แถบสถานะ -->
+            <div class="h-8 bg-teal-950 flex items-center justify-between px-4 text-xs font-bold border-b border-teal-400">
+                <span id="status" class="text-rose-400">สถานะ: รอการวางลิงก์</span>
+                <span id="lineCount" class="text-teal-400">0 LINES</span>
             </div>
             
+            <!-- ช่องแสดงผล Lua -->
+            <div class="h-1/2 p-2 bg-black flex flex-col">
+                <p class="text-center text-white text-[10px] font-bold mb-2">// EXTRACTED LUA CODE //</p>
+                <textarea id="outputLua" readonly class="w-full flex-grow bg-transparent text-xs font-bold text-emerald-400 resize-none outline-none font-mono" placeholder="-- โค้ด Lua จะแสดงที่นี่..."></textarea>
+            </div>
         </div>
-        
-        <!-- Footer -->
-        <hr class="border-t-2 border-cyan/70 w-full">
-        <div class="text-center py-3 text-xs font-black tracking-widest text-gray-200 bg-gray-950">
-            ผู้สร้าง : N99 HUB
+
+        <!-- ปุ่มควบคุม -->
+        <div class="flex justify-around text-sm font-black py-2 border-t border-teal-400 mt-2">
+            <button onclick="navigator.clipboard.writeText(finalCode); alert('คัดลอกโค้ดแล้ว!');" class="hover:text-teal-300">คัดลอก</button> | 
+            <button onclick="downloadCode()" class="hover:text-teal-300">ดาวโหลด</button> | 
+            <button onclick="clearAll()" class="text-rose-400 hover:text-rose-300">ล้าง</button>
         </div>
-        
+        <p class="text-center text-[10px] font-bold text-gray-400 mt-2">ผู้สร้าง : N99 HUB</p>
     </div>
 
     <script>
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let finalCode = "";
 
-        function playSfx(type) {
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
-
-            if (type === 'click') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.06, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-                osc.start(now); osc.stop(now + 0.04);
-            } else if (type === 'success') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-                osc.start(now); osc.stop(now + 0.2);
-            } else if (type === 'fetch') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.08);
-                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-                osc.start(now); osc.stop(now + 0.08);
-            } else if (type === 'error') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(150, now);
-                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                osc.start(now); osc.stop(now + 0.15);
-            }
+        // ฟังก์ชันลบโค้ดขยะ (Deobfuscator เบื้องต้น)
+        function cleanJunkCode(code) {
+            return code
+                .replace(/if\s+false\s+then.*?end/gs, '') // ลบเงื่อนไขลวงที่ไม่มีวันทำงาน
+                .replace(/^--.*$/gm, '')                  // ลบคอมเมนต์ที่พวกโปรแกรมเข้ารหัสชอบใส่มาหลอก
+                .replace(/^\s*[\r\n]/gm, '')              // ลบบรรทัดว่างที่เยอะเกินไป
+                .trim();
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
-            toast.classList.add('opacity-100', 'translate-y-0');
-            setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
-                toast.classList.remove('opacity-100', 'translate-y-0');
-            }, 2000);
-        }
-
-        let currentCode = "";
-
-        function extractCleanUrl(rawInput) {
-            if (!rawInput) return "";
-            const match = rawInput.match(/https?:\/\/[^\s"'`\)\>]+/i);
-            if (!match) return rawInput.trim();
-            let url = match[0].replace(/["')\s]+$/, '').replace(/%2520/g, '%20');
-            if (url.includes('github.com') && url.includes('/blob/')) {
-                url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-            }
-            return url;
-        }
-
-        async function fetchScriptSmart(targetUrl) {
-            const statusEl = document.getElementById('statusText');
+        async function fetchScript() {
+            let elInput = document.getElementById('inputUrl');
+            let elOutput = document.getElementById('outputLua');
+            let elStatus = document.getElementById('status');
+            let elLines = document.getElementById('lineCount');
             
-            // ใส่พารามิเตอร์หลอกว่าเป็น Roblox ดึงข้อมูล เผื่อตบตา Antiraw ได้
-            const trickUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'executor=roblox&ua=robloxApp';
-            const encodedTrick = encodeURIComponent(trickUrl);
-            const encodedTarget = encodeURIComponent(targetUrl);
-
-            // สายเจาะระบบ 4 เส้นทาง สู้จนกว่าจะดึงได้
-            const proxies = [
-                `https://api.codetabs.com/v1/proxy?quest=${encodedTrick}`,
-                `https://api.allorigins.win/raw?url=${encodedTrick}`,
-                `https://secret.natwarach99.workers.dev/?url=${encodedTarget}`, // Cloudflare Worker ตัวเด็ด
-                targetUrl // ทะลวงตรงๆ
-            ];
-
-            for (let i = 0; i < proxies.length; i++) {
-                statusEl.innerText = `สถานะ: กำลังทะลวง (${i+1}/${proxies.length})...`;
-                statusEl.className = "text-amber-400 font-black animate-pulse tracking-widest";
+            let rawInput = elInput.value.trim();
+            // ดึงเฉพาะลิงก์ https:// ออกมาจากก้อน loadstring อัตโนมัติ
+            let extractedUrl = rawInput.match(/https?:\/\/[^\s"'`\)\>]+/i)?.[0] || rawInput; 
+            
+            if (!extractedUrl.startsWith('http')) return;
+            
+            elStatus.innerText = "สถานะ: กำลังดึงและถอดรหัส...";
+            elStatus.className = "text-yellow-400";
+            
+            try {
+                // เรียกใช้ Worker ของเรา
+                let res = await fetch(`https://secret.natwarach99.workers.dev/?url=${encodeURIComponent(extractedUrl)}`);
+                if (!res.ok) throw new Error("Worker ตอบกลับว่าเกิดข้อผิดพลาด (อาจติด Block หรือไม่มีไฟล์)");
                 
-                try {
-                    const res = await fetch(proxies[i], { cache: 'no-store' });
-                    if (res.ok) {
-                        const txt = await res.text();
-                        // ถ้าแกะแล้วไม่เจอคำพวกนี้ แปลว่าทะลวงสำเร็จ!
-                        if (txt && !txt.includes('Script is Protected') && !txt.includes('not allowed to view') && !txt.includes('missing ?url=')) {
-                            return txt;
-                        }
-                    }
-                } catch(e) {
-                    continue; // ไม่ยอมแพ้ วนไปเส้นทางต่อไป
-                }
-            }
-
-            throw new Error("Antiraw ล็อกแน่นมาก! (ต้องเอา Worker โค้ดเก่าไปใส่ Cloudflare จริงๆ ถึงจะชนะ 100%)");
-        }
-
-        async function handleUrlInput() {
-            const urlBox = document.getElementById('urlInput');
-            let rawInput = urlBox.value.trim();
-
-            if (rawInput.includes('http')) {
-                playSfx('fetch');
-                const targetUrl = extractCleanUrl(rawInput);
-
-                document.getElementById('scanner').classList.remove('hidden');
+                let rawLua = await res.text();
                 
-                try {
-                    currentCode = await fetchScriptSmart(targetUrl);
-                    document.getElementById('codeDisplay').value = currentCode;
+                // นำโค้ดเข้าเครื่องซักผ้า (ลบขยะ)
+                finalCode = cleanJunkCode(rawLua); 
+                
+                // แสดงผล
+                elOutput.value = finalCode; 
+                elStatus.innerText = "สถานะ: สำเร็จ!";
+                elStatus.className = "text-emerald-400";
+                
+                // นับบรรทัด
+                let lines = finalCode.split('\n').length;
+                elLines.innerText = lines + " LINES";
 
-                    const lines = currentCode.split('\n').length;
-                    document.getElementById('statsInfo').innerText = `${lines} LINES`;
-
-                    const statusEl = document.getElementById('statusText');
-                    statusEl.innerText = "สถานะ: สำเร็จ!";
-                    statusEl.className = "text-emerald-400 font-black tracking-widest drop-shadow-[0_0_5px_rgba(52,211,153,0.8)]";
-                    
-                    playSfx('success');
-                    showToast("⚡ ทะลวงสคริปต์สำเร็จ!");
-
-                } catch (err) {
-                    playSfx('error');
-                    const statusEl = document.getElementById('statusText');
-                    statusEl.innerText = "สถานะ: ล้มเหลว";
-                    statusEl.className = "text-rose-500 font-black tracking-widest drop-shadow-[0_0_5px_rgba(244,63,94,0.8)]";
-                    
-                    document.getElementById('codeDisplay').value = "-- เกิดข้อผิดพลาด: " + err.message;
-                    showToast("❌ ทะลวงไม่สำเร็จ!");
-                } finally {
-                    document.getElementById('scanner').classList.add('hidden');
-                }
+            } catch (err) {
+                elStatus.innerText = "สถานะ: ล้มเหลว (Antiraw บล็อก / ลิงก์ตาย)";
+                elStatus.className = "text-rose-400";
+                elOutput.value = "-- " + err.message;
             }
-        }
-
-        function copyCode() {
-            playSfx('click');
-            if (!currentCode) {
-                playSfx('error');
-                return showToast("⚠️ วางลิงก์ก่อนดิวะ!");
-            }
-            navigator.clipboard.writeText(currentCode).then(() => {
-                playSfx('success');
-                showToast("📋 คัดลอกโค้ดเรียบร้อย!");
-            });
         }
 
         function downloadCode() {
-            playSfx('click');
-            if (!currentCode) {
-                playSfx('error');
-                return showToast("⚠️ วางลิงก์ก่อนดิวะ!");
-            }
-            const blob = new Blob([currentCode], { type: "text/plain;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Nine_Script.txt";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-
-            playSfx('success');
-            showToast("💾 ดาวน์โหลดไฟล์ .txt สำเร็จ!");
+            if (!finalCode) return;
+            let a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([finalCode], {type: "text/plain"}));
+            a.download = 'N99_Extracted_Script.txt';
+            a.click();
         }
 
         function clearAll() {
-            playSfx('click');
-            document.getElementById('urlInput').value = "";
-            document.getElementById('codeDisplay').value = "";
-            currentCode = "";
-            const statusEl = document.getElementById('statusText');
-            statusEl.innerText = "สถานะ: รอรับคำสั่ง";
-            statusEl.className = "text-cyan font-black tracking-widest drop-shadow-[0_0_5px_rgba(45,212,191,0.8)]";
-            document.getElementById('statsInfo').innerText = "0 LINES";
-            showToast("🧹 ล้างข้อมูลแล้ว");
+            document.getElementById('inputUrl').value = '';
+            document.getElementById('outputLua').value = '';
+            document.getElementById('status').innerText = 'สถานะ: รอการวางลิงก์';
+            document.getElementById('status').className = 'text-gray-400';
+            document.getElementById('lineCount').innerText = '0 LINES';
+            finalCode = '';
         }
     </script>
 </body>
